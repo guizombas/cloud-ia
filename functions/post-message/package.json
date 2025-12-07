@@ -1,0 +1,9 @@
+{
+  "name": "lambda-post-message",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@aws-sdk/client-sqs": "^3.946.0",
+    "redis": "^5.10.0"
+  }
+}
