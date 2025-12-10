@@ -1,10 +1,10 @@
-# 📦 Guia de Deployment — Projeto Cloud Native & Serverless (cloud-ia)
+#  Guia de Deployment — Projeto Cloud Native & Serverless (cloud-ia)
 
 Este documento descreve o processo de deployment da solução híbrida (Serverless + Containers), incluindo a infraestrutura necessária, configuração de serviços, pipeline sugerido e instruções para ambientes locais e cloud.
 
 ---
 
-# 🏗️ 1. Visão Geral do Deployment
+#  1. Visão Geral do Deployment
 
 A aplicação utiliza uma arquitetura que combina:
 
@@ -21,7 +21,7 @@ A aplicação utiliza uma arquitetura que combina:
 
 ---
 
-# ⚙️ 2. Componentes Necessários
+#  2. Componentes Necessários
 
 A solução possui os seguintes componentes na infraestrutura de produção:
 
@@ -84,18 +84,18 @@ User -> Chat -> Message
 
 ## **3.2. Passos**
 
-### **1️⃣ Clonar o repositório**
+### **1️ Clonar o repositório**
 ```bash
 git clone https://github.com/guizombas/cloud-ia.git
 cd cloud-ia
 ```
 
-### **2️⃣ Instalar dependências
+### **2️ Instalar dependências
 ```bash
 npm install
 ```
 
-### **3️⃣ #Subir serviços auxiliares (Redis, Worker, WebSocket)
+### **3️ #Subir serviços auxiliares (Redis, Worker, WebSocket)
 
 No ambiente local não há API Gateway WebSocket.
 Portanto, um serviço próprio WebSocket deve ser iniciado.
@@ -108,7 +108,7 @@ Um docker-compose.yml deve conter ao menos:
 
 - websocket-service
 
-### **4️⃣ Deploy das Lambdas
+### **4️ Deploy das Lambdas
 
 Caso use Serverless Framework:
 ```bash
@@ -127,7 +127,7 @@ DLQ
 
 API Gateway HTTP
 
-### **5️⃣ Verificar endpoints criados
+### **5️ Verificar endpoints criados
 
 Exemplo:
 
@@ -135,7 +135,7 @@ Exemplo:
 serverless info
 ```
 
-### **☁️ 4. Deployment em Produção (AWS)
+### ** 4. Deployment em Produção (AWS)
 #4.1. Infraestrutura como Código (IaC)
 
 # Ferramentas recomendadas:
@@ -156,7 +156,7 @@ serverless info
 - Worker Deployment + HPA
 - Secrets (API_KEY da LLM)
 
-### **🚀 5. Pipeline de CI/CD (GitHub Actions)
+### ** 5. Pipeline de CI/CD (GitHub Actions)
 
 Um workflow sugerido:
 
@@ -176,7 +176,7 @@ Pipeline:
 - Push no ECR
 - Apply do Helm Chart no EKS
 
-### **🧪 6. Testes Pós-Deploy
+### ** 6. Testes Pós-Deploy
 
 Após o deploy, validar:
 
@@ -213,7 +213,7 @@ kubectl logs deployment/worker
 
 Verificar histórico no console AWS ou via CLI.
 
-### **🧰 7. Troubleshooting
+### ** 7. Troubleshooting
 # Mensagens não chegam ao Worker
 
 - Verificar permissões IAM
@@ -226,7 +226,7 @@ Verificar histórico no console AWS ou via CLI.
 - Confirmar limites de erro da API externa
 - Verificar latência da LLM
 
-### **📌 8. Roadmap (Relacionado ao Deployment)
+### ** 8. Roadmap (Relacionado ao Deployment)
 # Prioridade Alta
 
 - Criar WebSocket Service próprio para ambiente local
@@ -244,7 +244,7 @@ Verificar histórico no console AWS ou via CLI.
 - Instrumentação New Relic
 - Terraform para toda infraestrutura
 
-### **✔️ 9. Conclusão
+### ** 9. Conclusão
 
 Este documento descreve o processo de deployment completo da solução Cloud Native & Serverless.
 Com ele, o time consegue:
