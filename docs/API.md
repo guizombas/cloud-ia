@@ -1,5 +1,5 @@
 
-# 🌐 Documentação da API — Projeto Cloud Native & Serverless (cloud-ia)
+# Documentação da API — Projeto Cloud Native & Serverless (cloud-ia)
 
 Este documento descreve todas as APIs expostas pelo projeto cloud-ia, incluindo:
 
@@ -14,18 +14,18 @@ A API é utilizada pelo Frontend para enviar mensagens, receber respostas e cons
 
 ---
 
-# 🛠️ 1. Visão Geral
+# 1. Visão Geral
 
 A API tem dois canais principais:
 
-### ✔️ **1. HTTP (REST) — Entrada de mensagens**
+###  **1. HTTP (REST) — Entrada de mensagens**
 Usado para:
 - Enviar mensagens do usuário
 - Criar jobId
 - Inicializar fluxo assíncrono
 - Persistir sessão (connectionId via Redis)
 
-### ✔️ **2. WebSocket — Saída de mensagens**
+###  **2. WebSocket — Saída de mensagens**
 Usado para:
 - Receber respostas da IA em tempo real
 - Atualizações do status do job
@@ -33,7 +33,7 @@ Usado para:
 
 ---
 
-# 📡 2. Endpoints HTTP (REST)
+# 2. Endpoints HTTP (REST)
 
 ## **2.1 POST /chat**
 Envia uma nova mensagem para processamento pela IA.
@@ -60,6 +60,75 @@ A conexão WebSocket é usada pelo cliente para:
 
 Chamado automaticamente ao conectar.
 
-# 📥 Request
+#  Request
 
 Conexão WebSocket padrão.
+
+Response
+
+```bash
+{
+  "status": "connected",
+  "connectionId": "WS-xyz456"
+}
+```
+
+O connectionId é salvo no Redis para roteamento posterior.
+
+# 3.2 Rota: $disconnect
+
+Chamado quando o cliente encerra a conexão.
+
+Responsável por:
+
+- Limpar sessionId / connectionId do Redis
+- Encerrar heartbeat (se configurado)
+
+# 3.3 Rota: $default
+
+Usada para mensagens não roteadas.
+
+Payload recebido pelo Worker ao enviar a resposta:
+
+```bash
+{
+  "jobId": "job-7f8f2d3c",
+  "content": "Olá! Como posso ajudar?",
+  "timestamp": 1733788120
+}
+```
+
+###  4. Mensagens Enviadas pelo Worker ao WebSocket
+
+Quando o processamento é concluído, o Worker envia ao WebSocket Service:
+
+# Mensagem de Sucesso
+
+```bash
+{
+  "event": "message_completed",
+  "jobId": "job-7f8f2d3c",
+  "sessionId": "abc123",
+  "content": "Olá! Como posso te ajudar hoje?",
+  "metadata": {
+    "model": "gpt-4.1",
+    "tokens": 152
+  }
+}
+```
+
+# Mensagem de Erro (Circuit Breaker, Timeout, Falha no SQS, etc.)
+
+```bash
+{
+  "event": "error",
+  "jobId": "job-7f8f2d3c",
+  "message": "Erro ao processar a requisição",
+  "details": "Timeout atingido ao chamar a API LLM."
+}
+```
+
+### 5. Conclusão
+
+Este documento formaliza o contrato da API utilizado pelo serviço cloud-ia.
+Com ele, qualquer frontend ou integrador externo pode consumir o sistema com segurança e previsibilidade.
