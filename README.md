@@ -2,37 +2,45 @@
 
 Este repositório contém a implementação do Trabalho Prático 2 da disciplina de Arquitetura de Soluções Cloud Native & Serverless. O projeto consiste em um serviço de chat inteligente, resiliente e escalável, utilizando uma arquitetura híbrida (Serverless + Containers).
 
-**📋 Integrantes**
+## 📋 Integrantes
 
-  **Instituição:** PUC Minas
+   **Instituição:** PUC Minas
   
-  **Curso:** Arquitetura de Soluções
+   **Curso:** Arquitetura de Soluções
   
-  **Grupo:**
+   **Grupo:**
  
-   Aline Maria - Matrícula: 234631
+    Aline Maria - Matrícula: 234631
    
-   Cristiana Elisa - [Inserir Matrícula]
+    Cristiana Elisa - [Inserir Matrícula]
    
-   Davi Felipe - Matrícula: 234846
+    Davi Felipe - Matrícula: 234846
    
-   Guilherme Gabriel - [Inserir Matrícula]
+    Guilherme Gabriel - [Inserir Matrícula]
   
-**🏗️ Arquitetura da Solução**
+## 🏗️ Arquitetura da Solução
 A solução foi implementada seguindo o desenho arquitetural aprovado no TP1, visando desacoplamento e alta disponibilidade.
 
 **Diagrama de Arquitetura**
 
 <img width="903" height="592" alt="image" src="https://github.com/user-attachments/assets/f4645117-2b04-4123-b72e-4a5a267d2d29" />
 
-**Fluxo de Dados**
-  **Entrada:** O cliente (Web) conecta-se via API Gateway.
-  **Processamento Rápido (Serverless): **Funções FaaS (Lambda) recebem a requisição HTTP e a enfileiram no SQS.
-  **Processamento Assíncrono (Worker):** Pods/Containers consomem a fila SQS.
-  **Inteligência:** O Worker chama a API de LLM externa (OpenAI/Anthropic) protegida por um Circuit Breaker.
-  **Resposta: **O resultado é enviado de volta ao cliente via conexão WebSocket e persistido no DynamoDB.
+(Imagem: Trabalho de Arquitetura de Soluções Cloud Native & Serverless.doc)
 
-**🚀 Implementação e Componentes (Código Fonte)**
+
+**Fluxo de Dados**
+
+   **- Entrada:** O cliente (Web) conecta-se via API Gateway.
+    
+   **- Processamento Rápido (Serverless):** Funções FaaS (Lambda) recebem a requisição HTTP e a enfileiram no SQS.
+    
+   **- Processamento Assíncrono (Worker):** Pods/Containers consomem a fila SQS.
+    
+   **- Inteligência:** O Worker chama a API de LLM externa (OpenAI/Anthropic) protegida por um Circuit Breaker.
+    
+   **- Resposta:** O resultado é enviado de volta ao cliente via conexão WebSocket e persistido no DynamoDB.
+
+## 🚀 Implementação e Componentes (Código Fonte)
 
   **1. API Gateway & Entrypoint**
     Tecnologia: [Ex: AWS API Gateway / Kong / Nginx]
@@ -53,7 +61,7 @@ A solução foi implementada seguindo o desenho arquitetural aprovado no TP1, vi
     DynamoDB (NoSQL): Utilizado para histórico de chat com padrão de acesso hierárquico (User -> Chat -> Message)3.
     Redis: Cache de contexto e mapeamento de sessões WebSocket (Session ID <-> Connection ID) para baixa latência4.
 
-**🛡️ Resiliência (Requisito Chave do TP2)**
+## 🛡️ Resiliência (Requisito Chave do TP2)
 Aplicamos padrões de estabilidade para garantir que o sistema suporte falhas em dependências externas (API da LLM).
 
   **Mecanisma:** Circuit Breaker
@@ -72,7 +80,7 @@ Aplicamos padrões de estabilidade para garantir que o sistema suporte falhas em
   **Onde foi aplicado?** Chamadas HTTP
   **Descrição:** Timeouts configurados em 29s nas Lambdas e definições rígidas nas chamadas à API externa.
 
-**📊 Observabilidade**
+## 📊 Observabilidade
 A aplicação foi instrumentada para fornecer visibilidade completa do fluxo distribuído (Traces, Métricas e Logs).
 
   **1. Tracing Distribuído**
@@ -86,7 +94,7 @@ A aplicação foi instrumentada para fornecer visibilidade completa do fluxo dis
   Erros: Taxa de falhas no Circuit Breaker.
   Evidência: ![Dashboard de Monitoramento](./docs/dashboard.png)
 
-**💰 CloudOps & FinOps**
+## 💰 CloudOps & FinOps
 
   **Infraestrutura como Código (IaC)**
   Toda a infraestrutura foi provisionada via código para garantir reprodutibilidade e auditoria7.
@@ -97,7 +105,7 @@ A aplicação foi instrumentada para fornecer visibilidade completa do fluxo dis
     **Scale-to-Zero:** O front-end e a camada de entrada (Lambdas) custam zero quando não utilizados9.
     **Spot Instances:** [Se aplicável] Uso de instâncias Spot para os Workers no Kubernetes para redução de custos computacionais.
 
-**🛠️ Como rodar o projeto localmente**
+## 🛠️ Como rodar o projeto localmente
   
  **Pré-requisitos**
     Docker & Docker Compose
