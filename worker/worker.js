@@ -1,6 +1,6 @@
 require("dotenv").config();
 const { poll, deleteMessage } = require("./sqs");
-const { askLLM } = require("./llm");
+const { callLLM } = require("./llm");
 const { saveMessage, getConversation } = require("./dynamodb");
 const { getConnectionId } = require("./redis");
 const axios = require("axios");
@@ -26,7 +26,9 @@ async function run() {
         const history = await getConversation(conversationId);
 
         // Gera resposta LLM
-        const answer = await askLLM(content);
+        const answer = await callLLM(history, content);
+
+        console.log("Resposta gerada:", answer);
 
         // Salva resposta
         await saveMessage(conversationId, "assistant", answer);
