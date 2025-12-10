@@ -1,128 +1,132 @@
-## ☁️ Projeto Cloud Native & Serverless - Assistente de Conversação (Chat-GPT Style)
+# ☁️ Projeto Cloud Native & Serverless - Assistente de Conversação Inteligente
 
-Este repositório contém a implementação do Trabalho Prático 2 da disciplina de Arquitetura de Soluções Cloud Native & Serverless. O projeto consiste em um serviço de chat inteligente, resiliente e escalável, utilizando uma arquitetura híbrida (Serverless + Containers).
+Este repositório contém a implementação completa do **Trabalho Prático 2**, apresentando um serviço de chat resiliente e escalável que utiliza uma arquitetura híbrida (Serverless + Containers).
 
 ## 📋 Integrantes
+* **Instituição:** PUC Minas
+* **Curso:** Arquitetura de Soluções
+* **Grupo:**
+  * Aline Maria - [Matrícula]
+  * Cristiana Elisa - [Matrícula]
+  * Davi Felipe - [Matrícula]
+  * Guilherme Gabriel - [Matrícula]
 
-   **Instituição:** PUC Minas
-  
-   **Curso:** Arquitetura de Soluções
-  
-   **Grupo:**
- 
-    Aline Maria - Matrícula: 234631
-   
-    Cristiana Elisa - [Inserir Matrícula]
-   
-    Davi Felipe - Matrícula: 234846
-   
-    Guilherme Gabriel - [Inserir Matrícula]
-  
-## 🏗️ Arquitetura da Solução
-A solução foi implementada seguindo o desenho arquitetural aprovado no TP1, visando desacoplamento e alta disponibilidade.
+---
 
-**Diagrama de Arquitetura**
+## 🏗️ Arquitetura e Fluxo de Dados
+
+A solução combina a agilidade do Serverless para o Front-end/API com a robustez de Containers (Workers) para o processamento pesado de IA.
+
+1.  **Entrada:** Usuário envia mensagem via Frontend → **API Gateway**.
+2.  **Ingestão (FaaS):** Lambda recebe o request, valida e publica na fila **SQS** para processamento assíncrono.
+3.  **Processamento (Worker):**
+    * O componente **Worker** consome a fila SQS.
+    * Recupera o contexto da conversa no **Redis** (Cache) ou **DynamoDB**.
+    * Realiza a chamada à API de LLM (OpenAI/Anthropic).
+4.  **Resposta:** O Worker envia a resposta gerada diretamente ao cliente via conexão **WebSocket**.
 
 <img width="903" height="592" alt="image" src="https://github.com/user-attachments/assets/f4645117-2b04-4123-b72e-4a5a267d2d29" />
 
 (Imagem: Trabalho de Arquitetura de Soluções Cloud Native & Serverless.doc)
 
+---
 
-**Fluxo de Dados**
+## ⚙️ Detalhes da Implementação: O Worker
 
-   **- Entrada:** O cliente (Web) conecta-se via API Gateway.
-    
-   **- Processamento Rápido (Serverless):** Funções FaaS (Lambda) recebem a requisição HTTP e a enfileiram no SQS.
-    
-   **- Processamento Assíncrono (Worker):** Pods/Containers consomem a fila SQS.
-    
-   **- Inteligência:** O Worker chama a API de LLM externa (OpenAI/Anthropic) protegida por um Circuit Breaker.
-    
-   **- Resposta:** O resultado é enviado de volta ao cliente via conexão WebSocket e persistido no DynamoDB.
+O **Worker** é o coração do processamento desta aplicação. Diferente das funções Serverless (que possuem tempo de vida curto), o Worker roda em container para gerenciar conexões longas e processamento complexo sem risco de *timeout*.
 
-## 🚀 Implementação e Componentes (Código Fonte)
+* **Localização:** `/src/worker`
+* **Tecnologia:** [Python / Node.js - *Confirme a linguagem usada pela equipe*]
+* **Responsabilidades:**
+    * Consumo escalável da fila SQS.
+    * Orquestração da chamada à IA.
+    * Gerenciamento de estado (State Management) das mensagens.
 
-  **1. API Gateway & Entrypoint**
-    Tecnologia: [Ex: AWS API Gateway / Kong / Nginx]
-    Políticas Implementadas:
-    Autenticação: [Ex: Validação de JWT no Authorizer da Lambda]
-    Rate Limiting: [Ex: Limite de 100 req/s por usuário para proteção de custos]
-    Roteamento: Separação clara entre rotas REST (POST /chat) e rotas WebSocket ($connect, $default).
-  
-  **2. Compute Layer (Híbrido)**
-    FaaS (Serverless):
-    Responsável pela recepção de mensagens e gerenciamento de conexões WebSocket.
-    Localização no código: /src/lambdas 1
-    Workers (Containers/Kubernetes):
-    Responsável pelo processamento pesado e comunicação com a LLM. Utiliza containers para evitar timeouts do FaaS em respostas longas da IA.
-    Localização no código: /src/worker 2
-  
-  **3. Persistência e Cache**
-    DynamoDB (NoSQL): Utilizado para histórico de chat com padrão de acesso hierárquico (User -> Chat -> Message)3.
-    Redis: Cache de contexto e mapeamento de sessões WebSocket (Session ID <-> Connection ID) para baixa latência4.
+---
 
-## 🛡️ Resiliência (Requisito Chave do TP2)
-Aplicamos padrões de estabilidade para garantir que o sistema suporte falhas em dependências externas (API da LLM).
+## 🛡️ Resiliência e Melhorias (Novidades)
 
-  **Mecanisma:** Circuit Breaker
-  **Onde foi aplicado?** Worker Service
-  **Descrição:** Protege o sistema caso a API da OpenAI caia. Se a taxa de erros passar de X%, o circuito abre e falha rápido ("Fail Fast") sem consumir recursos5.
-  
-  **Mecanisma:** Retry com Backoff
-  **Onde foi aplicado?** Fila SQS
-  **Descrição:** Se o processamento falhar, a mensagem retorna à fila e é tentada novamente após um tempo exponencial, garantindo que perguntas não sejam perdidas6.
-  
-  **Mecanisma:** Dead Letter Queue (DLQ)
-  **Onde foi aplicado?** Infraestrutura SQS
-  **Descrição:** Mensagens que falham repetidamente são enviadas para uma DLQ para análise posterior.
-  
-  **Mecanisma:** Timeouts
-  **Onde foi aplicado?** Chamadas HTTP
-  **Descrição:** Timeouts configurados em 29s nas Lambdas e definições rígidas nas chamadas à API externa.
+Nesta versão, implementamos padrões robustos de resiliência para garantir que o serviço continue funcionando mesmo com instabilidades na API de IA.
+
+### 1. Circuit Breaker
+Implementado no `Worker` para proteger o sistema contra falhas na API externa (LLM).
+* **Funcionamento:** Se a API da OpenAI/Anthropic começar a falhar repetidamente (ex: > 5 erros em 10s), o circuito "abre" e o Worker para de tentar enviar requisições temporariamente, retornando um erro amigável imediatamente ("Fail Fast"). Isso evita o consumo desnecessário de recursos e custos.
+* *Status:* ✅ Implementado e testado.
+
+### 2. Retries com Exponential Backoff
+Na leitura da fila SQS.
+* **Funcionamento:** Caso ocorra um erro transiente (ex: falha de rede momentânea), a mensagem não é perdida. Ela retorna à fila e é processada novamente após um intervalo de tempo crescente (2s, 4s, 8s...), garantindo eventual consistência.
+
+### 3. Dead Letter Queue (DLQ)
+* **Funcionamento:** Mensagens que falham após `N` tentativas são movidas para uma fila segregada (DLQ) para análise manual, garantindo que nenhum dado do cliente seja perdido silenciosamente.
+
+---
 
 ## 📊 Observabilidade
-A aplicação foi instrumentada para fornecer visibilidade completa do fluxo distribuído (Traces, Métricas e Logs).
 
-  **1. Tracing Distribuído**
-  Utilizamos [Ex: AWS X-Ray / New Relic / Jaeger] para rastrear a requisição desde o API Gateway, passando pela Fila SQS, até o Worker e a volta via WebSocket.
-  Evidência: ![Screenshot do Trace](./docs/trace-exemplo.png)
-  
-  **3. Métricas (Dashboards)**
-  Monitoramos as seguintes métricas vitais (Golden Signals):
-  Latência: Tempo de resposta da LLM.
-  Tráfego: Quantidade de mensagens na fila SQS.
-  Erros: Taxa de falhas no Circuit Breaker.
-  Evidência: ![Dashboard de Monitoramento](./docs/dashboard.png)
+A aplicação agora conta com instrumentação para monitoramento em tempo real.
+
+* **Traces:** Rastreamento distribuído (FaaS → SQS → Worker) para identificar gargalos de latência.
+* **Métricas:** Monitoramento de:
+    * *Throughput* de mensagens na fila.
+    * Taxa de erros no Circuit Breaker.
+    * Latência da API de LLM.
+* **Logs Estruturados:** Logs em formato JSON para fácil ingestão e busca.
+
+---
+
+## 🚀 Como executar o Worker localmente
+
+1.  Configure as variáveis de ambiente:
+    ```bash
+    cp .env.example .env
+    # Preencha suas chaves da AWS e OpenAI API Key
+    ```
+2.  Instale as dependências:
+    ```bash
+    cd src/worker
+    npm install  # ou pip install -r requirements.txt
+    ```
+3.  Inicie o serviço:
+    ```bash
+    npm start    # ou python worker.py
+    ```
+
+---
 
 ## 💰 CloudOps & FinOps
 
-  **Infraestrutura como Código (IaC)**
-  Toda a infraestrutura foi provisionada via código para garantir reprodutibilidade e auditoria7.
-    **Ferramenta:** [Ex: Terraform / Serverless Framework / AWS SAM]
-    **Pipeline CI/CD:** O deploy é realizado automaticamente via GitHub Actions8.
-  
-  **Estratégia de Custos (FinOps)**
-    **Scale-to-Zero:** O front-end e a camada de entrada (Lambdas) custam zero quando não utilizados9.
-    **Spot Instances:** [Se aplicável] Uso de instâncias Spot para os Workers no Kubernetes para redução de custos computacionais.
+* **Infraestrutura como Código (IaC):** Todo o ambiente (Filas, Tabelas, Lambdas) é provisionado automaticamente.
+* **Controle de Custos:** O uso de filas SQS permite "achatar" a curva de requisições, evitando que picos de tráfego disparem custos excessivos de concorrência na LLM.
+
+---
 
 ## 🛠️ Como rodar o projeto localmente
   
  **Pré-requisitos**
-    Docker & Docker Compose
-    Node.js v18+ / Python 3.9+
-    Conta configurada na AWS (CLI)
+ 
+  Docker & Docker Compose
+  
+  Node.js v18+ / Python 3.9+
+  
+  Conta configurada na AWS (CLI)
 
   **Passos**
-  1. Clone o repositório:
+  
+1.  Clone o repositório:
+    ```bash
     git clone https://github.com/guizombas/cloud-ia.git
-  
-  2. Instale as dependências:
+    ```
+2.  Instale as dependências:
+    ```bash
     npm install
-  
-  3. Deploy da infraestrutura:
+    ```
+3.  Deploy da infraestrutura:
+    ```bash
     serverless deploy --stage dev
+    ```
 
--------------------------------------------------------------------------------------------------------------
+---
 
 ## Tolist
 
