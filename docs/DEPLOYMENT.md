@@ -88,28 +88,32 @@ User -> Chat -> Message
 ```bash
 git clone https://github.com/guizombas/cloud-ia.git
 cd cloud-ia
+```
 
-2️⃣ Instalar dependências
+### **2️⃣ Instalar dependências
+```bash
 npm install
+```
 
-3️⃣ Subir serviços auxiliares (Redis, Worker, WebSocket)
+### **3️⃣ #Subir serviços auxiliares (Redis, Worker, WebSocket)
 
 No ambiente local não há API Gateway WebSocket.
 Portanto, um serviço próprio WebSocket deve ser iniciado.
 
 Um docker-compose.yml deve conter ao menos:
 
-redis
+- redis
 
-worker
+- worker
 
-websocket-service
+- websocket-service
 
-4️⃣ Deploy das Lambdas
+### **4️⃣ Deploy das Lambdas
 
 Caso use Serverless Framework:
-
+```bash
 serverless deploy --stage dev
+```
 
 Isso criará:
 
@@ -123,163 +127,132 @@ DLQ
 
 API Gateway HTTP
 
-5️⃣ Verificar endpoints criados
+### **5️⃣ Verificar endpoints criados
 
 Exemplo:
 
+```bash
 serverless info
+```
 
-☁️ 4. Deployment em Produção (AWS)
-4.1. Infraestrutura como Código (IaC)
+### **☁️ 4. Deployment em Produção (AWS)
+#4.1. Infraestrutura como Código (IaC)
 
-Ferramentas recomendadas:
+# Ferramentas recomendadas:
 
-Terraform (para a parte AWS + Kubernetes)
+- Terraform (para a parte AWS + Kubernetes)
+- Serverless Framework (para as Lambdas + API Gateway)
+- Helm (para deploy no EKS)
 
-Serverless Framework (para as Lambdas + API Gateway)
+# Componentes provisionados via IaC:
 
-Helm (para deploy no EKS)
+- SQS + DLQ
+- DynamoDB
+- Redis (Elasticache)
+- Roles IAM (Lambdas e Workers)
+- API Gateway REST + WebSocket
+- Lambdas (upload + config)
+- Cluster Kubernetes (EKS)
+- Worker Deployment + HPA
+- Secrets (API_KEY da LLM)
 
-Componentes provisionados via IaC:
-
-SQS + DLQ
-
-DynamoDB
-
-Redis (Elasticache)
-
-Roles IAM (Lambdas e Workers)
-
-API Gateway REST + WebSocket
-
-Lambdas (upload + config)
-
-Cluster Kubernetes (EKS)
-
-Worker Deployment + HPA
-
-Secrets (API_KEY da LLM)
-
-🚀 5. Pipeline de CI/CD (GitHub Actions)
+### **🚀 5. Pipeline de CI/CD (GitHub Actions)
 
 Um workflow sugerido:
 
-5.1. Para Lambdas
+# 5.1. Para Lambdas
 
 Pipeline:
 
-Rodar lint/testes
+- Rodar lint/testes
+- Empacotar Lambdas
+- Deploy via Serverless Framework
 
-Empacotar Lambdas
-
-Deploy via Serverless Framework
-
-5.2. Para Workers
+# 5.2. Para Workers
 
 Pipeline:
 
-Build da imagem Docker
+- Build da imagem Docker
+- Push no ECR
+- Apply do Helm Chart no EKS
 
-Push no ECR
-
-Apply do Helm Chart no EKS
-
-🧪 6. Testes Pós-Deploy
+### **🧪 6. Testes Pós-Deploy
 
 Após o deploy, validar:
 
-API HTTP
+# API HTTP
 
+```bash
 curl -X POST https://<api-gateway-url>/chat \
   -H "Content-Type: application/json" \
   -d '{"message": "Olá"}'
+```
 
-
-WebSocket
+# WebSocket
 
 Conectar usando:
 
+```bash
 wscat -c ws://<ws-endpoint>
+```
 
-SQS
+# SQS
 
 Verificar se:
 
 mensagens entram na fila
 
-DLQ está vazia
+# DLQ está vazia
 
-Worker Pod
+# Worker Pod
+
+```bash
 kubectl logs deployment/worker
-
-DynamoDB
+```
+# DynamoDB
 
 Verificar histórico no console AWS ou via CLI.
 
-🧰 7. Troubleshooting
-Mensagens não chegam ao Worker
+### **🧰 7. Troubleshooting
+# Mensagens não chegam ao Worker
 
-Verificar permissões IAM
+- Verificar permissões IAM
+- Verificar se Worker está consumindo da fila certa
+- Verificar visibilityTimeout
+- WebSocket não responde
+- Verificar salvamento do connectionId no Redis
+- Verificar timeout de sessão
+- Circuit Breaker ativando demais
+- Confirmar limites de erro da API externa
+- Verificar latência da LLM
 
-Verificar se Worker está consumindo da fila certa
+### **📌 8. Roadmap (Relacionado ao Deployment)
+# Prioridade Alta
 
-Verificar visibilityTimeout
+- Criar WebSocket Service próprio para ambiente local
+- Criar Lambda POST /chat
+- Criar Worker para ler SQS
+- Configurar integração com LLM
+- Configurar DynamoDB + Redis
 
-WebSocket não responde
+# Prioridade Baixa
 
-Verificar salvamento do connectionId no Redis
+- Parameter Store para secrets
+- Deploy Kubernetes com Helm local
+- Lambdas GET (mensagens + conversas)
+- Frontend SPA
+- Instrumentação New Relic
+- Terraform para toda infraestrutura
 
-Verificar timeout de sessão
-
-Circuit Breaker ativando demais
-
-Confirmar limites de erro da API externa
-
-Verificar latência da LLM
-
-📌 8. Roadmap (Relacionado ao Deployment)
-Prioridade Alta
-
-Criar WebSocket Service próprio para ambiente local
-
-Criar Lambda POST /chat
-
-Criar Worker para ler SQS
-
-Configurar integração com LLM
-
-Configurar DynamoDB + Redis
-
-Prioridade Baixa
-
-Parameter Store para secrets
-
-Deploy Kubernetes com Helm local
-
-Lambdas GET (mensagens + conversas)
-
-Frontend SPA
-
-Instrumentação New Relic
-
-Terraform para toda infraestrutura
-
-✔️ 9. Conclusão
+### **✔️ 9. Conclusão
 
 Este documento descreve o processo de deployment completo da solução Cloud Native & Serverless.
 Com ele, o time consegue:
 
-Executar localmente
-
-Fazer deploy em cloud
-
-Automatizar via CI/CD
-
-Operar e diagnosticar problemas
-
-Adicionar novas funcionalidades com segurança
+- Executar localmente
+- Fazer deploy em cloud
+- Automatizar via CI/CD
+- Operar e diagnosticar problemas
+- Adicionar novas funcionalidades com segurança
 
 
----
-
-Se quiser, posso também gerar **ARCHITECTURE.md**, **OBSERVABILITY.md**, **RESILIENCE.md**, **API.md**, tudo 
