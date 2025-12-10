@@ -3,10 +3,14 @@ const { poll, deleteMessage } = require("./sqs");
 const { callLLM } = require("./llm");
 const { saveMessage, getConversation } = require("./dynamodb");
 const { getConnectionId } = require("./redis");
-const axios = require("axios");
+const { startWebSocketServer, sendToClient } = require("./ws");
 
 async function run() {
+
+    startWebSocketServer();
+
     console.log("Worker iniciado. Aguardando mensagens...");
+
 
     while (true) {
         const msg = await poll();
@@ -38,10 +42,10 @@ async function run() {
 
         if (connectionId) {
             console.log(`Enviando resposta ao cliente ${connectionId}`);
-            await axios.post(process.env.WS_CALLBACK_URL, {
-                connectionId,
-                message: answer
-            });
+            sendToClient(connectionId, JSON.stringify({
+                conversationId,
+                content: answer
+            }));
         }
 
         // Apaga do SQS
