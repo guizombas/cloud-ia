@@ -1,0 +1,11 @@
+{
+  "name": "cloudia-worker",
+  "version": "1.0.0",
+  "dependencies": {
+    "@aws-sdk/client-sqs": "^3.946.0",
+    "@aws-sdk/client-dynamodb": "^3.946.0",
+    "axios": "^1.6.7",
+    "redis": "^5.10.0",
+    "dotenv": "^16.3.1"
+  }
+}
