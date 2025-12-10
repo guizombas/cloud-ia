@@ -6,148 +6,98 @@ Este repositório contém a implementação completa do **Trabalho Prático 2**,
 * **Instituição:** PUC Minas
 * **Curso:** Arquitetura de Soluções
 * **Grupo:**
-  * Aline Maria - [Matrícula]
-  * Cristiana Elisa - [Matrícula]
-  * Davi Felipe - [Matrícula]
-  * Guilherme Gabriel - [Matrícula]
+  * Aline Maria
+  * Cristiana Elisa
+  * Davi Felipe
+  * Guilherme Gabriel
+
+# ☁️ Cloud-IA: Assistente de Conversação Serverless & Cloud Native
+
+> **Versão:** 1.0.0 (Estrutura Inicial - TP2)
+
+O **cloud-ia** (pronuncia-se *claudia*) é um serviço de chat resiliente e escalável, projetado com uma arquitetura híbrida que combina a agilidade do **Serverless** com a robustez de **Containers**.
+
+O projeto foi desenvolvido como parte do Trabalho Prático 2 de **Arquitetura de Soluções** (PUC Minas), focando em alta disponibilidade, tolerância a falhas e processamento assíncrono de IA Generativa.
 
 ---
 
-## 🏗️ Arquitetura e Fluxo de Dados
+## 🚀 Funcionalidades & Diferenciais
 
-A solução combina a agilidade do Serverless para o Front-end/API com a robustez de Containers (Workers) para o processamento pesado de IA.
-
-1.  **Entrada:** Usuário envia mensagem via Frontend → **API Gateway**.
-2.  **Ingestão (FaaS):** Lambda recebe o request, valida e publica na fila **SQS** para processamento assíncrono.
-3.  **Processamento (Worker):**
-    * O componente **Worker** consome a fila SQS.
-    * Recupera o contexto da conversa no **Redis** (Cache) ou **DynamoDB**.
-    * Realiza a chamada à API de LLM (OpenAI/Anthropic).
-4.  **Resposta:** O Worker envia a resposta gerada diretamente ao cliente via conexão **WebSocket**.
-
-<img width="903" height="592" alt="image" src="https://github.com/user-attachments/assets/f4645117-2b04-4123-b72e-4a5a267d2d29" />
-
-(Imagem: Trabalho de Arquitetura de Soluções Cloud Native & Serverless.doc)
+* **Arquitetura Híbrida:** API Gateway + Lambdas para ingestão rápida (HTTP/WS) e Workers em Containers para processamento pesado (LLM).
+* **Comunicação Assíncrona:** Uso de filas **SQS** para *backpressure* e desacoplamento.
+* **Alta Resiliência:** Implementação de **Circuit Breaker**, **Retries com Backoff Exponencial** e **Dead Letter Queues (DLQ)**.
+* **Tempo Real:** Respostas via **WebSocket** com roteamento otimizado via **Redis**.
+* **Persistência Escalável:** Histórico de conversas armazenado no **DynamoDB** (Single-Table Design).
 
 ---
 
-## ⚙️ Detalhes da Implementação: O Worker
+## 📚 Documentação Oficial
 
-O **Worker** é o coração do processamento desta aplicação. Diferente das funções Serverless (que possuem tempo de vida curto), o Worker roda em container para gerenciar conexões longas e processamento complexo sem risco de *timeout*.
+A documentação detalhada foi movida para a pasta [`/docs`](./docs) para melhor organização:
 
-* **Localização:** `/src/worker`
-* **Tecnologia:** Python / Node.js
-* **Responsabilidades:**
-    * Consumo escalável da fila SQS.
-    * Orquestração da chamada à IA.
-    * Gerenciamento de estado (State Management) das mensagens.
-
----
-
-## 🛡️ Resiliência e Melhorias (Novidades)
-
-Nesta versão, implementamos padrões robustos de resiliência para garantir que o serviço continue funcionando mesmo com instabilidades na API de IA.
-
-### 1. Circuit Breaker
-Implementado no `Worker` para proteger o sistema contra falhas na API externa (LLM).
-* **Funcionamento:** Se a API da OpenAI/Anthropic começar a falhar repetidamente (ex: > 5 erros em 10s), o circuito "abre" e o Worker para de tentar enviar requisições temporariamente, retornando um erro amigável imediatamente ("Fail Fast"). Isso evita o consumo desnecessário de recursos e custos.
-* *Status:* ✅ Implementado e testado.
-
-### 2. Retries com Exponential Backoff
-Na leitura da fila SQS.
-* **Funcionamento:** Caso ocorra um erro transiente (ex: falha de rede momentânea), a mensagem não é perdida. Ela retorna à fila e é processada novamente após um intervalo de tempo crescente (2s, 4s, 8s...), garantindo eventual consistência.
-
-### 3. Dead Letter Queue (DLQ)
-* **Funcionamento:** Mensagens que falham após `N` tentativas são movidas para uma fila segregada (DLQ) para análise manual, garantindo que nenhum dado do cliente seja perdido silenciosamente.
+* [**Arquitetura e Fluxo de Dados**](./docs/ARCHITECTURE.md): Entenda o funcionamento híbrido e as decisões de design.
+* [**Guia de Deployment**](./docs/DEPLOYMENT.md): Passo a passo para rodar localmente (Docker) ou em produção (AWS).
+* [**API Reference**](./docs/API.md): Contratos HTTP (`POST /chat`) e eventos WebSocket.
+* [**Resiliência e Falhas**](./docs/RESILIENCE.md): Detalhes sobre Circuit Breaker, Timeouts e DLQ.
+* [**Changelog**](./docs/CHANGELOG.md): Histórico de versões e Roadmap.
 
 ---
 
-## 📊 Observabilidade
+## 🛠️ Tecnologias
 
-A aplicação agora conta com instrumentação para monitoramento em tempo real.
-
-* **Traces:** Rastreamento distribuído (FaaS → SQS → Worker) para identificar gargalos de latência.
-* **Métricas:** Monitoramento de:
-    * *Throughput* de mensagens na fila.
-    * Taxa de erros no Circuit Breaker.
-    * Latência da API de LLM.
-* **Logs Estruturados:** Logs em formato JSON para fácil ingestão e busca.
+* **Cloud:** AWS (SQS, DynamoDB, API Gateway, Lambda)
+* **Compute:** Node.js / Python (Workers e Lambdas)
+* **Data:** Redis (Cache/Sessão) e DynamoDB (NoSQL)
+* **DevOps:** Serverless Framework, Docker Compose.
 
 ---
 
-## 🚀 Como executar o Worker localmente
+## ⚡ Quick Start (Local)
 
-1.  Configure as variáveis de ambiente:
+Para rodar o ambiente de desenvolvimento, utilizamos uma abordagem híbrida com serviços locais simulados.
+
+### Pré-requisitos
+* Docker & Docker Compose
+* Node.js 18+
+* Serverless Framework (`npm install -g serverless`)
+
+### Passos
+
+1.  **Clone o repositório:**
     ```bash
-    cp .env.example .env
-    # Preencha suas chaves da AWS e OpenAI API Key
-    ```
-2.  Instale as dependências:
-    ```bash
-    cd src/worker
-    npm install  # ou pip install -r requirements.txt
-    ```
-3.  Inicie o serviço:
-    ```bash
-    npm start    # ou python worker.py
+    git clone [https://github.com/guizombas/cloud-ia.git](https://github.com/guizombas/cloud-ia.git)
+    cd cloud-ia
     ```
 
----
-
-## 💰 CloudOps & FinOps
-
-* **Infraestrutura como Código (IaC):** Todo o ambiente (Filas, Tabelas, Lambdas) é provisionado automaticamente.
-* **Controle de Custos:** O uso de filas SQS permite "achatar" a curva de requisições, evitando que picos de tráfego disparem custos excessivos de concorrência na LLM.
-
----
-
-## 🛠️ Como rodar o projeto localmente
-  
- **Pré-requisitos**
- 
-  Docker & Docker Compose
-  
-  Node.js v18+ / Python 3.9+
-  
-  Conta configurada na AWS (CLI)
-
-  **Passos**
-  
-1.  Clone o repositório:
-    ```bash
-    git clone https://github.com/guizombas/cloud-ia.git
-    ```
-2.  Instale as dependências:
+2.  **Instale as dependências:**
     ```bash
     npm install
     ```
-3.  Deploy da infraestrutura:
+
+3.  **Suba a infraestrutura local (Redis, Worker, WebSocket Service):**
+    > Como o LocalStack Free não suporta API Gateway WebSocket, usamos um serviço customizado localmente.
+    ```bash
+    docker-compose up -d
+    ```
+
+4.  **Faça o deploy das Lambdas e Recursos AWS (SQS/DynamoDB):**
     ```bash
     serverless deploy --stage dev
     ```
 
+5.  **Teste a API:**
+    ```bash
+    # Enviar mensagem
+    curl -X POST http://localhost:3000/chat -d '{"message": "Olá, IA!"}'
+    ```
+
 ---
 
-## Tolist
+## 🗺️ Roadmap (Próximos Passos)
 
-Prioridades:
-- [x] Criar base para criação de lambdas
-- [x] Criar lambda de POST de mensagem (gerar jobId, enviar para fila SQS e salvar connection id no redis)
-- [x] Criar worker pod que lê do SQS
-- [x] No worker pod, implementar chamada para a API LLM (passar API_KEY no .env)
-- [x] No worker pod, implementar leitura e escrita de mensagens da conversa no dynamodb
-- [x] No worker pod, implementar retorno no websocket lendo connection id do redis
-- [x] Criar serviço que sobe conexão websocket (não tem API Gateway WebSocket no Localstack free)
-- [x] Gerar connectionId e retornar na conexão no serviço websocket
+Conforme definido no [CHANGELOG](./docs/CHANGELOG.md):
 
-Menor prioridade:
-- [ ] Usar o parameter store para salvar API_KEY
-- [ ] implementar refresh de sessão websocket 
-- [ ] implementar kubernets local usando helm
-- [ ] Criar lambda de GET de mensagens
-- [ ] Criar lamda de GET de conversas
-- [ ] Implementar cache de mensagens no redis no worker e no 
-- [ ] Detalhar readme com arquitetura e diagrama e contexto
-- [ ] Criar frontend que faz as chamadas
-- [ ] Adicionar instrumentação no newRelic
-- [ ] Fazer parte de infra como código (terraform)
+- [ ] **v1.1.0:** Implementação completa da Lambda POST /chat e integração do Worker com OpenAI/Anthropic.
+- [ ] **v1.2.0:** Segurança com Parameter Store e Refresh de Sessão WS.
+- [ ] **v1.3.0:** Frontend SPA e Cache de mensagens.
+- [ ] **v1.4.0:** IaC com Terraform e Monitoramento New Relic.
