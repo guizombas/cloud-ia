@@ -15,7 +15,7 @@ Este repositório contém a implementação completa do **Trabalho Prático 2**,
 
 > **Versão:** 1.0.0 (Estrutura Inicial - TP2)
 
-O **cloud-ia** (pronuncia-se *claudia*) é um serviço de chat resiliente e escalável, projetado com uma arquitetura híbrida que combina a agilidade do **Serverless** com a robustez de **Containers**.
+O **cloud-ia** é um serviço de chat resiliente e escalável, projetado com uma arquitetura híbrida que combina a agilidade do **Serverless** com a robustez de **Containers**.
 
 O projeto foi desenvolvido como parte do Trabalho Prático 2 de **Arquitetura de Soluções** (PUC Minas), focando em alta disponibilidade, tolerância a falhas e processamento assíncrono de IA Generativa.
 
