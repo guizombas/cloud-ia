@@ -26,6 +26,10 @@ module.exports = {
             KeyConditionExpression: "conversationId = :cid",
             ExpressionAttributeValues: { ":cid": { S: conversationId } }
         }));
-        return result.Items || [];
+        return (result.Items || []).map(item => ({
+            role: item.role.S,
+            content: item.content.S,
+            timestamp: Number(item.timestamp.N)
+        }));
     }
 };
