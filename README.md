@@ -36,7 +36,7 @@ A solução combina a agilidade do Serverless para o Front-end/API com a robuste
 O **Worker** é o coração do processamento desta aplicação. Diferente das funções Serverless (que possuem tempo de vida curto), o Worker roda em container para gerenciar conexões longas e processamento complexo sem risco de *timeout*.
 
 * **Localização:** `/src/worker`
-* **Tecnologia:** [Python / Node.js - *Confirme a linguagem usada pela equipe*]
+* **Tecnologia:** Python / Node.js
 * **Responsabilidades:**
     * Consumo escalável da fila SQS.
     * Orquestração da chamada à IA.
