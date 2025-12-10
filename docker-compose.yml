@@ -9,6 +9,15 @@ services:
       - DEBUG=1
       - LAMBDA_DOCKER_NETWORK=cloud-ia_appnet
       - LAMBDA_DEFAULT_TIMEOUT=10
+      - SQS_URL=http://localstack:4566/000000000000/postMessageQueue
+      - REDIS_URL=redis://redis:6379
+      - LOCALSTACK_URL=http://localstack:4566
+      - DYNAMODB_TABLE=cloudia-messages
+      - HF_TOKEN=hf_
+      - HF_MODEL=meta-llama/Llama-3.1-8B-Instruct
+      - HF_MAX_NEW_TOKENS=256
+      - HF_TEMPERATURE=0.7
+      - WS_CALLBACK_URL=http://api-gateway:3001/send
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
     networks: [appnet]
