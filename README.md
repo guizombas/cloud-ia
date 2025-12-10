@@ -97,7 +97,7 @@ Para rodar o ambiente de desenvolvimento, utilizamos uma abordagem híbrida com 
 
 Conforme definido no [CHANGELOG](./docs/CHANGELOG.md):
 
-- [ ] **v1.1.0:** Implementação completa da Lambda POST /chat e integração do Worker com OpenAI/Anthropic.
+- [x] **v1.1.0:** Implementação completa da Lambda POST /chat e integração do Worker com OpenAI/Anthropic.
 - [ ] **v1.2.0:** Segurança com Parameter Store e Refresh de Sessão WS.
 - [ ] **v1.3.0:** Frontend SPA e Cache de mensagens.
 - [ ] **v1.4.0:** IaC com Terraform e Monitoramento New Relic.
