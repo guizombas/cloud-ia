@@ -1,4 +1,4 @@
-**☁️ Projeto Cloud Native & Serverless - Assistente de Conversação (Chat-GPT Style)**
+## ☁️ Projeto Cloud Native & Serverless - Assistente de Conversação (Chat-GPT Style)
 
 Este repositório contém a implementação do Trabalho Prático 2 da disciplina de Arquitetura de Soluções Cloud Native & Serverless. O projeto consiste em um serviço de chat inteligente, resiliente e escalável, utilizando uma arquitetura híbrida (Serverless + Containers).
 
