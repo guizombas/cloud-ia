@@ -3,14 +3,21 @@
 Este repositório contém a implementação do Trabalho Prático 2 da disciplina de Arquitetura de Soluções Cloud Native & Serverless. O projeto consiste em um serviço de chat inteligente, resiliente e escalável, utilizando uma arquitetura híbrida (Serverless + Containers).
 
 **📋 Integrantes**
-  **Instituição:** PUC Minas
-  **Curso: **Arquitetura de Soluções
- ** Grupo:**
-  Aline Maria - Matrícula: 234631
-  Cristiana Elisa - [Inserir Matrícula]
-  Davi Felipe - Matrícula: 234846
-  Guilherme Gabriel - [Inserir Matrícula]
 
+  **Instituição:** PUC Minas
+  
+  **Curso:** Arquitetura de Soluções
+  
+  **Grupo:**
+ 
+   Aline Maria - Matrícula: 234631
+   
+   Cristiana Elisa - [Inserir Matrícula]
+   
+   Davi Felipe - Matrícula: 234846
+   
+   Guilherme Gabriel - [Inserir Matrícula]
+  
 **🏗️ Arquitetura da Solução**
 A solução foi implementada seguindo o desenho arquitetural aprovado no TP1, visando desacoplamento e alta disponibilidade.
 
@@ -53,17 +60,17 @@ Aplicamos padrões de estabilidade para garantir que o sistema suporte falhas em
   **Onde foi aplicado?** Worker Service
   **Descrição:** Protege o sistema caso a API da OpenAI caia. Se a taxa de erros passar de X%, o circuito abre e falha rápido ("Fail Fast") sem consumir recursos5.
   
-  **Mecanisma:**Retry com Backoff
-  **Onde foi aplicado?**Fila SQS
-  **Descrição:**Se o processamento falhar, a mensagem retorna à fila e é tentada novamente após um tempo exponencial, garantindo que perguntas não sejam perdidas6.
+  **Mecanisma:** Retry com Backoff
+  **Onde foi aplicado?** Fila SQS
+  **Descrição:** Se o processamento falhar, a mensagem retorna à fila e é tentada novamente após um tempo exponencial, garantindo que perguntas não sejam perdidas6.
   
-  **Mecanisma:**Dead Letter Queue (DLQ)
-  **Onde foi aplicado?**Infraestrutura SQS
-  **Descrição:**Mensagens que falham repetidamente são enviadas para uma DLQ para análise posterior.
+  **Mecanisma:** Dead Letter Queue (DLQ)
+  **Onde foi aplicado?** Infraestrutura SQS
+  **Descrição:** Mensagens que falham repetidamente são enviadas para uma DLQ para análise posterior.
   
-  **Mecanisma:**Timeouts
-  **Onde foi aplicado?**Chamadas HTTP
-  **Descrição:**Timeouts configurados em 29s nas Lambdas e definições rígidas nas chamadas à API externa.
+  **Mecanisma:** Timeouts
+  **Onde foi aplicado?** Chamadas HTTP
+  **Descrição:** Timeouts configurados em 29s nas Lambdas e definições rígidas nas chamadas à API externa.
 
 **📊 Observabilidade**
 A aplicação foi instrumentada para fornecer visibilidade completa do fluxo distribuído (Traces, Métricas e Logs).
@@ -92,7 +99,7 @@ A aplicação foi instrumentada para fornecer visibilidade completa do fluxo dis
 
 **🛠️ Como rodar o projeto localmente**
   
- ** Pré-requisitos**
+ **Pré-requisitos**
     Docker & Docker Compose
     Node.js v18+ / Python 3.9+
     Conta configurada na AWS (CLI)
